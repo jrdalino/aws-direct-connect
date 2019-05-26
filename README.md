@@ -1,9 +1,45 @@
 # AWS Direct Connect
 
+## Getting Started
+
+### Step 1: Create a Connection
+```
+$ aws directconnect describe-locations
+
+$ aws directconnect create-connection \
+--location TIVIT \
+--bandwidth 1Gbps \
+--connectionname "Connection to AWS"
+```
+
+### Step 2: Download the LOA-CFA
+```
+$ aws directconnect describe-loa \
+--connection-id dxcon-fg31dyv6 \
+--output text \
+--query loaContent|base64 --decode > myLoaCfa.pdf
+```
+
+### Step 3: Create a Virtual Interface and get the Router Configuration
+```
+$ aws ec2 describe-vpn-gateways
+
+$ aws directconnect create-private-virtual-interface \
+--connection-id dxcon-fg31dyv6 \
+--new-private-virtual-interface virtualInterfaceName=PrivateVirtualInterface,vlan=101,asn=65000,virtualGatewayId=vgwebaa27db,addressFamily=ipv4
+
+$ aws directconnect describe-virtual-interfaces \
+--virtual-interface-id dxvif-ffhhk74f \
+--query virtualInterfaces[*].customerRouterConfig \
+--output text
+```
+
+### Step 4: Verify Your Virtual Interface using traceroute
+
 ## Locations
 - describe-locations
 
-## Connection
+## Create a Connection
 - create-connection
 - confirm-connection
 - delete-connection
