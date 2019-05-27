@@ -34,6 +34,46 @@ $ aws directconnect describe-virtual-interfaces \
 --output text
 ```
 
+- Sample Route Configuration (CISCO IOS)
+```
+interface GigabitEthernet0/1
+no ip address
+
+interface GigabitEthernet0/1.VLAN_NUMBER
+description "Direct Connect to your Amazon VPC or AWS Cloud"
+encapsulation dot1Q VLAN_NUMBER
+ip address YOUR_PEER_IP
+
+router bgp CUSTOMER_BGP_ASN
+neighbor AWS_PEER_IP remote-as AWS_ASN
+neighbor AWS_PEER_IP password MD5_key
+network 0.0.0.0 
+exit
+
+! Optionally configure Bidirectional Forwarding Detection (BFD).
+
+interface GigabitEthernet0/1.VLAN_NUMBER 
+bfd interval 300 min_rx 300 multiplier 3 
+router bgp CUSTOMER_BGP_ASN 
+neighbor AWS_PEER_IP fall-over bfd 
+
+! NAT Configuration for Public Virtual Interfaces (Optional)
+
+ip access-list standard NAT-ACL
+permit (internal subnet IP address for NAT)
+exit
+
+ip nat inside source list NAT-ACL interface GigabitEthernet0/1.VLAN_NUMBER overload
+
+interface GigabitEthernet0/1.VLAN_NUMBER
+ ip nat outside
+exit
+
+interface interface-towards-customer-local-network
+ ip nat inside
+exit
+```
+
 ### Step 4: Verify Your Virtual Interface using traceroute
 
 ## Locations
